@@ -1,6 +1,6 @@
 'use client'
 
-import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
+import { useWriteContract, useWaitForTransactionReceipt, useAccount } from 'wagmi'
 import { keccak256, toHex } from 'viem'
 
 // Simple contract ABI for storing signal hashes
@@ -31,10 +31,12 @@ export interface TradeSignal {
   stopLoss: number
   expiresIn: '24h' | '3d' | '7d'
   timestamp: number
+  trader?: string // Optional, added automatically
 }
 
 export function useWriteSignal() {
   const { data: hash, writeContract, isPending, error } = useWriteContract()
+  const { address } = useAccount()
   
   const { isLoading: isConfirming, isSuccess: isConfirmed } =
     useWaitForTransactionReceipt({
@@ -42,11 +44,17 @@ export function useWriteSignal() {
     })
 
   const writeSignal = async (signal: TradeSignal) => {
+    // Add trader address to signal
+    const signalWithTrader = {
+      ...signal,
+      trader: address || '0x0000000000000000000000000000000000000000',
+    }
+    
     // Save to localStorage first
-    saveSignalToLocalStorage(signal)
+    saveSignalToLocalStorage(signalWithTrader)
 
     // Create a hash of the signal for blockchain
-    const signalString = JSON.stringify(signal)
+    const signalString = JSON.stringify(signalWithTrader)
     const signalHash = keccak256(toHex(signalString))
 
     // Write to contract

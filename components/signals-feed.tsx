@@ -91,6 +91,8 @@ export function SignalsFeed() {
 
   // Map trader addresses to mock Ethos scores
   const getEthosScore = (address: string): number => {
+    if (!address) return 1000
+    
     const hash = address.toLowerCase().split('').reduce((acc, char) => {
       return acc + char.charCodeAt(0)
     }, 0)
