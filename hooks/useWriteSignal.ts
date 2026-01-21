@@ -14,13 +14,22 @@ const SIGNAL_CONTRACT_ABI = [
   },
 ] as const
 
-// Mock contract address - deploy your own for production
-const CONTRACT_ADDRESS = '0x0000000000000000000000000000000000000000'
+// ⚠️ IMPORTANT: Deploy the contract and update this address!
+// 1. Go to https://remix.ethereum.org
+// 2. Upload contracts/TrueAlphaSignals.sol
+// 3. Compile and deploy to Base Sepolia
+// 4. Copy the deployed address and paste it here
+const CONTRACT_ADDRESS = '0x0000000000000000000000000000000000000000' // ← REPLACE THIS
 
 export interface TradeSignal {
+  id: string
   pair: string
+  token: string
   direction: 'LONG' | 'SHORT'
-  targetPrice: string
+  entryPrice: number
+  targetPrice: number
+  stopLoss: number
+  expiresIn: '24h' | '3d' | '7d'
   timestamp: number
 }
 
@@ -33,7 +42,10 @@ export function useWriteSignal() {
     })
 
   const writeSignal = async (signal: TradeSignal) => {
-    // Create a hash of the signal
+    // Save to localStorage first
+    saveSignalToLocalStorage(signal)
+
+    // Create a hash of the signal for blockchain
     const signalString = JSON.stringify(signal)
     const signalHash = keccak256(toHex(signalString))
 
@@ -56,4 +68,21 @@ export function useWriteSignal() {
     isConfirmed,
     error,
   }
+}
+
+/**
+ * Save signal to localStorage for UI display and verification
+ */
+function saveSignalToLocalStorage(signal: TradeSignal) {
+  const stored = localStorage.getItem('truealpha-trades')
+  const trades = stored ? JSON.parse(stored) : []
+  
+  trades.unshift(signal) // Add to beginning
+  
+  // Keep only last 100 trades
+  if (trades.length > 100) {
+    trades.pop()
+  }
+  
+  localStorage.setItem('truealpha-trades', JSON.stringify(trades))
 }

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useAccount } from 'wagmi'
 
-// 🚧 DEV MODE: Set to true to simulate high reputation user
+// 🚧 DEV MODE: Set to true to bypass API and use mock data for UI testing
 const IS_DEV_MODE = false
 
 export interface EthosScore {
@@ -35,44 +35,44 @@ export function useEthosScore(): EthosScore {
       setError(null)
 
       try {
-        // 🚧 DEV MODE: Return simulated high-reputation user
+        // 🚧 DEV MODE: Return simulated high-reputation user for UI testing
         if (IS_DEV_MODE) {
-          await new Promise(resolve => setTimeout(resolve, 500)) // Simulate API delay
+          await new Promise(resolve => setTimeout(resolve, 500))
           setScore(1500)
           setBadges(['Whale', 'Early Adopter', 'Verified Trader'])
           setLoading(false)
           return
         }
 
-        // Production: Real Ethos API call
-        // Uncomment when you have real API key
-        // const response = await fetch(`https://api.ethos.network/v1/score/${address}`, {
-        //   headers: {
-        //     'X-API-Key': process.env.NEXT_PUBLIC_ETHOS_API_KEY || '',
-        //   },
-        // })
-        // const data = await response.json()
-        // setScore(data.score)
-        // setBadges(data.badges || [])
+        // ✅ PRODUCTION: Real Ethos API call
+        const response = await fetch(`https://api.ethos.network/api/v1/profiles/${address}/credibility-score`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
 
-        // Mock implementation for hackathon (when IS_DEV_MODE = false)
-        await new Promise(resolve => setTimeout(resolve, 800))
+        if (!response.ok) {
+          throw new Error(`Ethos API error: ${response.status}`)
+        }
+
+        const data = await response.json()
         
-        // Generate deterministic score based on address
-        const hash = address.toLowerCase().split('').reduce((acc, char) => {
-          return acc + char.charCodeAt(0)
-        }, 0)
+        // Ethos API returns score in the response
+        const credibilityScore = data.score || 0
+        setScore(credibilityScore)
+
+        // Extract badges/achievements if available
+        const userBadges: string[] = []
+        if (credibilityScore > 1500) userBadges.push('Top Trader')
+        if (credibilityScore > 1200) userBadges.push('Verified')
+        if (data.isVouched) userBadges.push('Vouched')
         
-        const mockScore = 800 + (hash % 1000)
-        const mockBadges: string[] = []
+        setBadges(userBadges)
         
-        if (mockScore > 1200) mockBadges.push('Verified')
-        if (mockScore > 1500) mockBadges.push('Top Trader')
-        
-        setScore(mockScore)
-        setBadges(mockBadges)
       } catch (err) {
-        setError('Failed to fetch credibility score')
+        console.error('Failed to fetch Ethos score:', err)
+        setError('Unable to fetch credibility score. Please try again.')
         setScore(0)
         setBadges([])
       } finally {
