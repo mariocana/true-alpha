@@ -2,30 +2,19 @@
 
 import { useState, useEffect } from 'react'
 
-// 🚧 DEV MODE: Set to true to use mock verification (no API calls)
-const IS_DEV_MODE = true
-
 export interface TradeSignal {
   id: string
   trader: string
-  token: string // e.g., "bitcoin", "ethereum"
+  token: string
   entryPrice: number
   targetPrice: number
   stopLoss: number
   timestamp: number
-  expiresIn: '24h' | '3d' | '7d' // Scadenza massima
+  expiresIn: '24h' | '3d' | '7d'
   direction: 'LONG' | 'SHORT'
   status?: 'PENDING' | 'WIN' | 'LOSS' | 'EXPIRED'
   closedAt?: number
   closedPrice?: number
-}
-
-interface PriceData {
-  timestamp: number
-  open: number
-  high: number
-  low: number
-  close: number
 }
 
 const EXPIRY_DURATION = {
@@ -35,8 +24,8 @@ const EXPIRY_DURATION = {
 }
 
 /**
- * Hook to check and verify trade status using CoinGecko API
- * Implements lazy loading - only checks when component mounts
+ * 🎭 MOCK verification for smooth demo
+ * For real implementation: replace getMockVerificationResult with real CoinGecko OHLC check
  */
 export function useTradeVerification(trade: TradeSignal) {
   const [status, setStatus] = useState<TradeSignal['status']>(trade.status || 'PENDING')
@@ -48,6 +37,9 @@ export function useTradeVerification(trade: TradeSignal) {
   useEffect(() => {
     // Skip if already resolved
     if (trade.status === 'WIN' || trade.status === 'LOSS' || trade.status === 'EXPIRED') {
+      setStatus(trade.status)
+      setClosedAt(trade.closedAt)
+      setClosedPrice(trade.closedPrice)
       return
     }
 
@@ -65,44 +57,29 @@ export function useTradeVerification(trade: TradeSignal) {
       // Check if trade has expired
       if (now > expiryTime) {
         setStatus('EXPIRED')
-        setLoading(false)
+        setClosedAt(now)
+        setClosedPrice(trade.entryPrice)
         updateLocalStorage(trade.id, 'EXPIRED', now, trade.entryPrice)
-        return
-      }
-
-      // 🚧 DEV MODE: Return mock verification result
-      if (IS_DEV_MODE) {
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        const mockResult = getMockVerificationResult(trade)
-        setStatus(mockResult.status)
-        setClosedAt(mockResult.closedAt)
-        setClosedPrice(mockResult.closedPrice)
-        
-        if (mockResult.status !== 'PENDING') {
-          updateLocalStorage(trade.id, mockResult.status, mockResult.closedAt!, mockResult.closedPrice!)
-        }
-        
         setLoading(false)
         return
       }
 
-      // Fetch historical price data from CoinGecko
-      const priceHistory = await fetchPriceHistory(
-        trade.token,
-        trade.timestamp,
-        now
-      )
-
-      // Verify if TP or SL was hit
-      const result = verifyTrade(trade, priceHistory)
-
-      setStatus(result.status)
-      setClosedAt(result.closedAt)
-      setClosedPrice(result.closedPrice)
-
-      // Update local storage with result
-      if (result.status !== 'PENDING') {
-        updateLocalStorage(trade.id, result.status, result.closedAt!, result.closedPrice!)
+      // 🎭 MOCK verification for demo (simulate checking OHLC data)
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      const mockResult = getMockVerificationResult(trade)
+      
+      setStatus(mockResult.status)
+      setClosedAt(mockResult.closedAt)
+      setClosedPrice(mockResult.closedPrice)
+      
+      if (mockResult.status !== 'PENDING') {
+        updateLocalStorage(
+          trade.id,
+          mockResult.status,
+          mockResult.closedAt!,
+          mockResult.closedPrice!
+        )
       }
 
     } catch (err) {
@@ -124,185 +101,41 @@ export function useTradeVerification(trade: TradeSignal) {
 }
 
 /**
- * Get mock verification result for dev mode
+ * 🎭 Mock verification result
+ * Returns deterministic outcome based on trade ID
+ * For production: replace with real OHLC check from CoinGecko
  */
 function getMockVerificationResult(trade: TradeSignal): {
   status: 'PENDING' | 'WIN' | 'LOSS'
   closedAt?: number
   closedPrice?: number
 } {
-  // Deterministic result based on trade ID
+  // Deterministic result based on trade ID (so it's consistent across refreshes)
   const hash = trade.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
   const outcome = hash % 3 // 0 = PENDING, 1 = WIN, 2 = LOSS
   
   const hoursSinceCreation = (Date.now() - trade.timestamp) / (1000 * 60 * 60)
   
-  // Only resolve if trade is at least 30 seconds old (for demo realism)
-  if (Date.now() - trade.timestamp < 30000) {
+  // Only resolve if trade is at least 2 seconds old (for demo realism)
+  if (Date.now() - trade.timestamp < 2000) {
     return { status: 'PENDING' }
   }
   
-  if (outcome === 0) {
+  if (outcome === 0 || hoursSinceCreation < 0.1) {
     return { status: 'PENDING' }
   } else if (outcome === 1) {
     return {
       status: 'WIN',
-      closedAt: trade.timestamp + (hoursSinceCreation * 0.5 * 60 * 60 * 1000),
+      closedAt: trade.timestamp + (Math.max(hoursSinceCreation * 0.5, 0.1) * 60 * 60 * 1000),
       closedPrice: trade.targetPrice,
     }
   } else {
     return {
       status: 'LOSS',
-      closedAt: trade.timestamp + (hoursSinceCreation * 0.6 * 60 * 60 * 1000),
+      closedAt: trade.timestamp + (Math.max(hoursSinceCreation * 0.6, 0.1) * 60 * 60 * 1000),
       closedPrice: trade.stopLoss,
     }
   }
-}
-
-/**
- * Fetch historical OHLC data from CoinGecko
- */
-async function fetchPriceHistory(
-  token: string,
-  fromTimestamp: number,
-  toTimestamp: number
-): Promise<PriceData[]> {
-  // CoinGecko free API - market_chart/range endpoint
-  // Returns price data in 5-minute intervals for recent data
-  const fromUnix = Math.floor(fromTimestamp / 1000)
-  const toUnix = Math.floor(toTimestamp / 1000)
-
-  const url = `https://api.coingecko.com/api/v3/coins/${token}/market_chart/range?vs_currency=usd&from=${fromUnix}&to=${toUnix}`
-
-  const response = await fetch(url, {
-    method: 'GET',
-    headers: {
-      'Accept': 'application/json',
-    },
-  })
-
-  if (!response.ok) {
-    throw new Error(`CoinGecko API error: ${response.status}`)
-  }
-
-  const data = await response.json()
-
-  // CoinGecko returns [timestamp, price] arrays
-  // We need to convert to OHLC format
-  // For simplicity, we'll treat each point as both high and low
-  const priceData: PriceData[] = []
-
-  if (data.prices && data.prices.length > 0) {
-    // Group prices into 1-hour candles for better OHLC approximation
-    const hourlyCandles = groupIntoCandles(data.prices)
-    priceData.push(...hourlyCandles)
-  }
-
-  return priceData
-}
-
-/**
- * Group price points into hourly OHLC candles
- */
-function groupIntoCandles(prices: [number, number][]): PriceData[] {
-  const candles: PriceData[] = []
-  const hourMs = 60 * 60 * 1000
-
-  let currentHour = Math.floor(prices[0][0] / hourMs) * hourMs
-  let open = prices[0][1]
-  let high = prices[0][1]
-  let low = prices[0][1]
-  let close = prices[0][1]
-
-  for (const [timestamp, price] of prices) {
-    const candleHour = Math.floor(timestamp / hourMs) * hourMs
-
-    if (candleHour !== currentHour) {
-      // Save current candle
-      candles.push({
-        timestamp: currentHour,
-        open,
-        high,
-        low,
-        close,
-      })
-
-      // Start new candle
-      currentHour = candleHour
-      open = price
-      high = price
-      low = price
-      close = price
-    } else {
-      // Update current candle
-      high = Math.max(high, price)
-      low = Math.min(low, price)
-      close = price
-    }
-  }
-
-  // Add last candle
-  candles.push({
-    timestamp: currentHour,
-    open,
-    high,
-    low,
-    close,
-  })
-
-  return candles
-}
-
-/**
- * Verify if trade hit TP or SL
- */
-function verifyTrade(
-  trade: TradeSignal,
-  priceHistory: PriceData[]
-): {
-  status: 'PENDING' | 'WIN' | 'LOSS'
-  closedAt?: number
-  closedPrice?: number
-} {
-  const { direction, targetPrice, stopLoss, entryPrice } = trade
-
-  for (const candle of priceHistory) {
-    if (direction === 'LONG') {
-      // LONG: Win if price reaches targetPrice, Loss if hits stopLoss
-      if (candle.high >= targetPrice) {
-        return {
-          status: 'WIN',
-          closedAt: candle.timestamp,
-          closedPrice: targetPrice,
-        }
-      }
-      if (candle.low <= stopLoss) {
-        return {
-          status: 'LOSS',
-          closedAt: candle.timestamp,
-          closedPrice: stopLoss,
-        }
-      }
-    } else {
-      // SHORT: Win if price drops to targetPrice, Loss if rises to stopLoss
-      if (candle.low <= targetPrice) {
-        return {
-          status: 'WIN',
-          closedAt: candle.timestamp,
-          closedPrice: targetPrice,
-        }
-      }
-      if (candle.high >= stopLoss) {
-        return {
-          status: 'LOSS',
-          closedAt: candle.timestamp,
-          closedPrice: stopLoss,
-        }
-      }
-    }
-  }
-
-  return { status: 'PENDING' }
 }
 
 /**
@@ -372,68 +205,39 @@ export function getTraderReputation(traderAddress: string): number {
 }
 
 /**
- * Batch verify multiple trades
+ * Manual admin function to force trade result (for demo)
+ * Call from browser console: window.forceTradeResult('trade-id', 'WIN')
  */
-export function useBatchTradeVerification(trades: TradeSignal[]) {
-  const [verifiedTrades, setVerifiedTrades] = useState<TradeSignal[]>(trades)
-  const [loading, setLoading] = useState(false)
-
-  useEffect(() => {
-    const verifyAll = async () => {
-      setLoading(true)
-
-      const updated = await Promise.all(
-        trades.map(async (trade) => {
-          if (trade.status === 'WIN' || trade.status === 'LOSS' || trade.status === 'EXPIRED') {
-            return trade
-          }
-
-          try {
-            const now = Date.now()
-            const expiryTime = trade.timestamp + EXPIRY_DURATION[trade.expiresIn]
-
-            if (now > expiryTime) {
-              return { ...trade, status: 'EXPIRED' as const }
-            }
-
-            // 🚧 DEV MODE: Use mock verification
-            if (IS_DEV_MODE) {
-              const mockResult = getMockVerificationResult(trade)
-              return {
-                ...trade,
-                status: mockResult.status,
-                closedAt: mockResult.closedAt,
-                closedPrice: mockResult.closedPrice,
-              }
-            }
-
-            const priceHistory = await fetchPriceHistory(
-              trade.token,
-              trade.timestamp,
-              now
-            )
-
-            const result = verifyTrade(trade, priceHistory)
-
-            return {
-              ...trade,
-              status: result.status,
-              closedAt: result.closedAt,
-              closedPrice: result.closedPrice,
-            }
-          } catch (err) {
-            console.error(`Failed to verify trade ${trade.id}:`, err)
-            return trade
-          }
-        })
-      )
-
-      setVerifiedTrades(updated)
-      setLoading(false)
+if (typeof window !== 'undefined') {
+  (window as any).forceTradeResult = (tradeId: string, result: 'WIN' | 'LOSS') => {
+    const stored = localStorage.getItem('truealpha-trades')
+    if (!stored) {
+      console.error('No trades found')
+      return
     }
 
-    verifyAll()
-  }, [])
+    try {
+      const trades: TradeSignal[] = JSON.parse(stored)
+      const trade = trades.find(t => t.id === tradeId)
+      
+      if (!trade) {
+        console.error('Trade not found:', tradeId)
+        console.log('Available trade IDs:', trades.map(t => t.id))
+        return
+      }
 
-  return { verifiedTrades, loading }
+      const closedPrice = result === 'WIN' ? trade.targetPrice : trade.stopLoss
+      updateLocalStorage(tradeId, result, Date.now(), closedPrice)
+      
+      console.log(`✅ Trade ${tradeId} forced to ${result}`)
+      console.log('Reload page to see changes')
+      
+      // Trigger a storage event to update UI
+      window.dispatchEvent(new Event('storage'))
+    } catch (err) {
+      console.error('Failed to force result:', err)
+    }
+  }
+  
+  console.log('💡 Admin function available: window.forceTradeResult(tradeId, "WIN" | "LOSS")')
 }
