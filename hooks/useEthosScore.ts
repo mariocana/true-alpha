@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react'
 import { useAccount } from 'wagmi'
 
-// 🎯 STRATEGY: Always call real Ethos API, but add fallback for demo wallet
-const DEMO_WALLET = '0x7BAcbbaadCbEeCc443F9885FAF6a2C9894E2F2B2' // Your demo wallet
-const DEMO_SCORE = 1500 // High score to show all features
+// 🎯 DEMO WALLET: This wallet gets a mock high score for demo purposes
+// All other wallets will get REAL Ethos API calls
+const DEMO_WALLET = '0x7BAcbbaadCbEeCc443F9885FAF6a2C9894E2F2B2'
+const DEMO_SCORE = 1500
 
 export interface EthosScore {
   address: string
@@ -36,7 +37,19 @@ export function useEthosScore(): EthosScore {
       setError(null)
 
       try {
-        // 🎯 ALWAYS try real Ethos API first
+        // 🎯 SPECIAL: If demo wallet, return mock high score immediately
+        if (address.toLowerCase() === DEMO_WALLET.toLowerCase()) {
+          console.log('🎭 Demo wallet detected - using mock score:', DEMO_SCORE)
+          await new Promise(resolve => setTimeout(resolve, 500)) // Simulate API delay
+          setScore(DEMO_SCORE)
+          setBadges(['Whale', 'Early Adopter', 'Verified Trader'])
+          setLoading(false)
+          return
+        }
+
+        // ✅ ALL OTHER WALLETS: Make REAL Ethos API call
+        console.log('🔍 Fetching real Ethos score for:', address)
+        
         const response = await fetch(`https://api.ethos.network/api/v1/profiles/${address}/credibility-score`, {
           method: 'GET',
           headers: {
@@ -48,9 +61,10 @@ export function useEthosScore(): EthosScore {
           const data = await response.json()
           const credibilityScore = data.score || 0
           
+          console.log('✅ Ethos API response:', credibilityScore)
           setScore(credibilityScore)
 
-          // Extract badges
+          // Extract badges based on score
           const userBadges: string[] = []
           if (credibilityScore > 1500) userBadges.push('Top Trader')
           if (credibilityScore > 1200) userBadges.push('Verified')
@@ -58,31 +72,22 @@ export function useEthosScore(): EthosScore {
           
           setBadges(userBadges)
         } else {
-          throw new Error('API returned error')
+          // API call failed - wallet probably has no Ethos profile
+          console.log('⚠️ Ethos API returned error:', response.status)
+          console.log('→ Wallet likely has no Ethos profile, score will be 0')
+          
+          setScore(0)
+          setBadges([])
+          setError(null) // Don't show error to user, 0 is valid
         }
         
       } catch (err) {
-        console.log('Ethos API not available, using fallback')
+        // Network error or API unavailable
+        console.error('❌ Failed to fetch Ethos score:', err)
+        console.log('→ Setting score to 0')
         
-        // 🎭 FALLBACK: If your demo wallet, give high score for demo
-        if (address.toLowerCase() === DEMO_WALLET.toLowerCase()) {
-          setScore(DEMO_SCORE)
-          setBadges(['Whale', 'Early Adopter', 'Verified Trader'])
-        } else {
-          // For other wallets, generate deterministic score
-          const hash = address.toLowerCase().split('').reduce((acc, char) => {
-            return acc + char.charCodeAt(0)
-          }, 0)
-          
-          const fallbackScore = 800 + (hash % 1000)
-          setScore(fallbackScore)
-          
-          const fallbackBadges: string[] = []
-          if (fallbackScore > 1200) fallbackBadges.push('Verified')
-          if (fallbackScore > 1500) fallbackBadges.push('Top Trader')
-          setBadges(fallbackBadges)
-        }
-        
+        setScore(0)
+        setBadges([])
         setError(null) // Don't show error to user
       } finally {
         setLoading(false)
