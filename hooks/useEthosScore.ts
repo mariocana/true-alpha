@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useAccount } from 'wagmi'
 
 // 🚧 DEV MODE: Set to true to simulate high reputation user
-const IS_DEV_MODE = true
+const IS_DEV_MODE = false
 
 export interface EthosScore {
   address: string

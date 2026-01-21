@@ -3,6 +3,7 @@
 import { useAccount } from 'wagmi'
 import { useEthosScore } from '@/hooks/useEthosScore'
 import { SignalForm } from './signal-form'
+import { RoadToAlpha } from './road-to-alpha'
 import { Card, CardContent } from './card'
 import { Shield, AlertCircle, Loader2, TrendingUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -144,33 +145,7 @@ export function Dashboard() {
       {canPost ? (
         <SignalForm />
       ) : (
-        <Card className="border-yellow-500/30">
-          <CardContent className="p-6 text-center space-y-3">
-            <AlertCircle className="h-10 w-10 mx-auto text-yellow-500" />
-            <div>
-              <h3 className="text-sm font-bold text-yellow-500 mb-1">
-                LOW REPUTATION - READ ONLY MODE
-              </h3>
-              <p className="text-xs text-muted-foreground">
-                Your Ethos Credibility Score is below the threshold of {REPUTATION_THRESHOLD}.
-              </p>
-            </div>
-            <div className="bg-terminal-bg p-3 rounded-sm border border-border">
-              <p className="text-[10px] text-muted-foreground leading-relaxed">
-                Build your on-chain reputation by:
-                <br />
-                • Completing transactions
-                <br />
-                • Participating in verified protocols
-                <br />
-                • Building positive attestations
-                <br />
-                <br />
-                You can still view and follow signals from high-reputation traders.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <RoadToAlpha currentScore={score} />
       )}
     </div>
   )
