@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useAccount } from 'wagmi'
 
 // 🚧 DEV MODE: Set to true to bypass API and use mock data for UI testing
-const IS_DEV_MODE = false
+const IS_DEV_MODE = true
 
 export interface EthosScore {
   address: string
