@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from './card'
 import { Button } from './button'
-import { Check, ExternalLink, Trophy, TrendingUp } from 'lucide-react'
+import { Check, ExternalLink, Trophy, TrendingUp, Users, MessageSquare, Shield, Award } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useRoadToAlphaProgress } from '@/hooks/useRoadToAlphaProgress'
 
@@ -11,50 +11,44 @@ interface RoadToAlphaTask {
   title: string
   description: string
   points: number
-  link?: string
-  linkText?: string
+  icon: React.ReactNode
 }
 
 const TASKS: RoadToAlphaTask[] = [
   {
-    id: 'twitter',
-    title: 'Connect Twitter on Ethos',
-    description: 'Link your Twitter account to verify your social presence',
+    id: 'reviews',
+    title: 'Give Reviews',
+    description: 'Leave positive, neutral, or negative reviews for other users',
     points: 200,
-    link: 'https://ethos.network/connect/twitter',
-    linkText: 'Connect Twitter',
+    icon: <MessageSquare className="h-4 w-4" />,
   },
   {
     id: 'vouch',
-    title: 'Receive 1 Vouch',
-    description: 'Get vouched by a trusted community member',
+    title: 'Get Vouched',
+    description: 'Receive vouches from trusted community members (they stake ETH on you)',
     points: 500,
-    link: 'https://ethos.network/vouches',
-    linkText: 'Learn about Vouches',
+    icon: <Shield className="h-4 w-4" />,
   },
   {
-    id: 'transactions',
-    title: 'Complete 5 Transactions on Base',
-    description: 'Show on-chain activity by making 5 verified transactions',
-    points: 100,
-    link: 'https://base.org',
-    linkText: 'Explore Base',
+    id: 'mutual-vouch',
+    title: 'Mutual Vouching',
+    description: 'Vouch for someone who also vouches for you (bonus points)',
+    points: 300,
+    icon: <Users className="h-4 w-4" />,
   },
   {
     id: 'attestation',
-    title: 'Create an Attestation',
-    description: 'Write an attestation for someone you trust',
+    title: 'Link Your Identities',
+    description: 'Connect your Twitter, wallet addresses, and other accounts to your Ethos profile',
     points: 150,
-    link: 'https://ethos.network/attestations',
-    linkText: 'Create Attestation',
+    icon: <Award className="h-4 w-4" />,
   },
   {
-    id: 'profile',
-    title: 'Complete Your Ethos Profile',
-    description: 'Add bio, avatar, and social links to your profile',
+    id: 'active',
+    title: 'Stay Active',
+    description: 'Regular participation increases your score over time',
     points: 100,
-    link: 'https://ethos.network/profile',
-    linkText: 'Edit Profile',
+    icon: <TrendingUp className="h-4 w-4" />,
   },
 ]
 
@@ -79,7 +73,7 @@ export function RoadToAlpha({ currentScore }: { currentScore: number }) {
               ROAD TO ALPHA
             </CardTitle>
             <p className="text-[10px] text-muted-foreground">
-              Complete tasks to unlock posting privileges
+              Build your on-chain reputation to unlock posting privileges
             </p>
           </div>
           <div className="text-right">
@@ -130,15 +124,14 @@ export function RoadToAlpha({ currentScore }: { currentScore: number }) {
             Want to post your signals?
           </p>
           <p className="text-[10px] text-muted-foreground leading-relaxed">
-            Build your on-chain reputation by completing the tasks below. 
-            Each task increases your Ethos Credibility Score.
+            Build your on-chain reputation on Ethos Network. Each action below increases your Credibility Score.
           </p>
         </div>
 
         {/* Tasks Checklist */}
         <div className="space-y-2">
           <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-            Reputation Tasks ({completedTasksCount}/{TASKS.length})
+            How to Increase Your Score ({completedTasksCount}/{TASKS.length})
           </div>
           
           {TASKS.map((task) => {
@@ -173,14 +166,22 @@ export function RoadToAlpha({ currentScore }: { currentScore: number }) {
                   {/* Task Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2 mb-1">
-                      <h4
-                        className={cn(
-                          'text-xs font-semibold',
-                          completed ? 'text-neon-green line-through' : 'text-foreground'
-                        )}
-                      >
-                        {task.title}
-                      </h4>
+                      <div className="flex items-center gap-2">
+                        <span className={cn(
+                          "flex-shrink-0",
+                          completed ? "text-neon-green" : "text-blue-400"
+                        )}>
+                          {task.icon}
+                        </span>
+                        <h4
+                          className={cn(
+                            'text-xs font-semibold',
+                            completed ? 'text-neon-green line-through' : 'text-foreground'
+                          )}
+                        >
+                          {task.title}
+                        </h4>
+                      </div>
                       <span
                         className={cn(
                           'flex-shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded border',
@@ -193,21 +194,9 @@ export function RoadToAlpha({ currentScore }: { currentScore: number }) {
                       </span>
                     </div>
                     
-                    <p className="text-[10px] text-muted-foreground mb-2">
+                    <p className="text-[10px] text-muted-foreground">
                       {task.description}
                     </p>
-
-                    {task.link && !completed && (
-                      <a
-                        href={task.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-[10px] text-blue-400 hover:text-blue-300 transition-colors"
-                      >
-                        {task.linkText || 'Learn More'}
-                        <ExternalLink className="h-2.5 w-2.5" />
-                      </a>
-                    )}
                   </div>
                 </div>
               </div>
@@ -220,10 +209,10 @@ export function RoadToAlpha({ currentScore }: { currentScore: number }) {
           <div className="flex items-center justify-between">
             <div>
               <div className="text-[10px] text-muted-foreground mb-1">
-                Potential Score After Completion
+                Potential Score After Actions
               </div>
               <div className="text-lg font-bold text-neon-green">
-                {currentScore + totalPossiblePoints}
+                {Math.min(currentScore + totalPossiblePoints, 2800)}
               </div>
             </div>
             <div className="text-right">
@@ -237,15 +226,24 @@ export function RoadToAlpha({ currentScore }: { currentScore: number }) {
           </div>
         </div>
 
-        {/* Learn More */}
+        {/* Learn More - SINGLE LINK TO ETHOS */}
         <Button
           variant="outline"
           className="w-full border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
-          onClick={() => window.open('https://ethos.network', '_blank')}
+          onClick={() => window.open('https://www.ethos.network', '_blank')}
         >
-          Learn More About Ethos Network
-          <ExternalLink className="h-3 w-3 ml-2" />
+          <span className="flex items-center gap-2">
+            <span>Start Building Your Reputation on Ethos</span>
+            <ExternalLink className="h-3 w-3" />
+          </span>
         </Button>
+
+        {/* Info Box */}
+        <div className="bg-blue-500/5 border border-blue-500/20 rounded-sm p-2">
+          <p className="text-[9px] text-muted-foreground leading-relaxed">
+            💡 <span className="text-blue-400 font-semibold">Tip:</span> Ethos uses a decentralized reputation system. Your score is based on real community interactions like reviews, vouches, and attestations. The more you participate authentically, the higher your score!
+          </p>
+        </div>
       </CardContent>
     </Card>
   )
