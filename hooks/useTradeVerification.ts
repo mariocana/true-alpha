@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react'
 
+// 🚧 DEV MODE: Set to true to use mock verification (no API calls)
+const IS_DEV_MODE = true
+
 export interface TradeSignal {
   id: string
   trader: string
@@ -67,6 +70,22 @@ export function useTradeVerification(trade: TradeSignal) {
         return
       }
 
+      // 🚧 DEV MODE: Return mock verification result
+      if (IS_DEV_MODE) {
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        const mockResult = getMockVerificationResult(trade)
+        setStatus(mockResult.status)
+        setClosedAt(mockResult.closedAt)
+        setClosedPrice(mockResult.closedPrice)
+        
+        if (mockResult.status !== 'PENDING') {
+          updateLocalStorage(trade.id, mockResult.status, mockResult.closedAt!, mockResult.closedPrice!)
+        }
+        
+        setLoading(false)
+        return
+      }
+
       // Fetch historical price data from CoinGecko
       const priceHistory = await fetchPriceHistory(
         trade.token,
@@ -101,6 +120,42 @@ export function useTradeVerification(trade: TradeSignal) {
     closedAt,
     closedPrice,
     recheck: () => checkTradeStatus(trade),
+  }
+}
+
+/**
+ * Get mock verification result for dev mode
+ */
+function getMockVerificationResult(trade: TradeSignal): {
+  status: 'PENDING' | 'WIN' | 'LOSS'
+  closedAt?: number
+  closedPrice?: number
+} {
+  // Deterministic result based on trade ID
+  const hash = trade.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+  const outcome = hash % 3 // 0 = PENDING, 1 = WIN, 2 = LOSS
+  
+  const hoursSinceCreation = (Date.now() - trade.timestamp) / (1000 * 60 * 60)
+  
+  // Only resolve if trade is at least 30 seconds old (for demo realism)
+  if (Date.now() - trade.timestamp < 30000) {
+    return { status: 'PENDING' }
+  }
+  
+  if (outcome === 0) {
+    return { status: 'PENDING' }
+  } else if (outcome === 1) {
+    return {
+      status: 'WIN',
+      closedAt: trade.timestamp + (hoursSinceCreation * 0.5 * 60 * 60 * 1000),
+      closedPrice: trade.targetPrice,
+    }
+  } else {
+    return {
+      status: 'LOSS',
+      closedAt: trade.timestamp + (hoursSinceCreation * 0.6 * 60 * 60 * 1000),
+      closedPrice: trade.stopLoss,
+    }
   }
 }
 
@@ -339,6 +394,17 @@ export function useBatchTradeVerification(trades: TradeSignal[]) {
 
             if (now > expiryTime) {
               return { ...trade, status: 'EXPIRED' as const }
+            }
+
+            // 🚧 DEV MODE: Use mock verification
+            if (IS_DEV_MODE) {
+              const mockResult = getMockVerificationResult(trade)
+              return {
+                ...trade,
+                status: mockResult.status,
+                closedAt: mockResult.closedAt,
+                closedPrice: mockResult.closedPrice,
+              }
             }
 
             const priceHistory = await fetchPriceHistory(

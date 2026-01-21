@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react'
 
+// 🚧 DEV MODE: Set to true to use mock prices (no API calls)
+const IS_DEV_MODE = true
+
 export interface LivePrice {
   token: string
   price: number
@@ -29,6 +32,17 @@ export function useLivePrice(token: string, autoRefresh = true): LivePrice {
       try {
         setLoading(true)
         setError(null)
+
+        // 🚧 DEV MODE: Return mock prices
+        if (IS_DEV_MODE) {
+          await new Promise(resolve => setTimeout(resolve, 500))
+          const mockPrice = getMockPrice(token)
+          setPrice(mockPrice)
+          setChange24h((Math.random() - 0.5) * 10) // Random between -5% and +5%
+          setLastUpdated(Date.now())
+          setLoading(false)
+          return
+        }
 
         // CoinGecko simple price endpoint
         const url = `https://api.coingecko.com/api/v3/simple/price?ids=${token}&vs_currencies=usd&include_24hr_change=true`
@@ -83,6 +97,30 @@ export function useLivePrice(token: string, autoRefresh = true): LivePrice {
 }
 
 /**
+ * Get mock price for dev mode
+ */
+function getMockPrice(token: string): number {
+  const mockPrices: Record<string, number> = {
+    'bitcoin': 43250.50,
+    'ethereum': 2285.75,
+    'solana': 98.45,
+    'avalanche-2': 36.80,
+    'arbitrum': 1.92,
+    'optimism': 3.15,
+    'matic-network': 0.88,
+    'binancecoin': 312.40,
+    'cardano': 0.52,
+    'polkadot': 7.35,
+    'chainlink': 15.60,
+    'uniswap': 8.90,
+    'aave': 92.50,
+    'curve-dao-token': 0.96,
+  }
+
+  return mockPrices[token] || 100
+}
+
+/**
  * Get price at specific timestamp (used for entry price)
  * Note: This uses current price as approximation
  * For production, you'd want to use historical endpoint
@@ -91,6 +129,11 @@ export async function getPriceAtTimestamp(
   token: string,
   timestamp: number
 ): Promise<number> {
+  // 🚧 DEV MODE: Return mock price
+  if (IS_DEV_MODE) {
+    return getMockPrice(token)
+  }
+
   try {
     // For recent timestamps (< 1 day), use current price as approximation
     const now = Date.now()
