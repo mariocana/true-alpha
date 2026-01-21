@@ -2,9 +2,8 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from './card'
 import { Button } from './button'
-import { Check, ExternalLink, Trophy, TrendingUp, Users, MessageSquare, Shield, Award } from 'lucide-react'
+import { ExternalLink, Trophy, TrendingUp, Users, MessageSquare, Shield, Award } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useRoadToAlphaProgress } from '@/hooks/useRoadToAlphaProgress'
 
 interface RoadToAlphaTask {
   id: string
@@ -53,10 +52,7 @@ const TASKS: RoadToAlphaTask[] = [
 ]
 
 export function RoadToAlpha({ currentScore }: { currentScore: number }) {
-  const { isTaskCompleted, completeTask } = useRoadToAlphaProgress()
-  
   const pointsNeeded = Math.max(0, 1200 - currentScore)
-  const completedTasksCount = TASKS.filter(task => isTaskCompleted(task.id)).length
   const totalPossiblePoints = TASKS.reduce((sum, task) => sum + task.points, 0)
   const progressPercentage = Math.min(
     ((currentScore / 1200) * 100),
@@ -128,80 +124,43 @@ export function RoadToAlpha({ currentScore }: { currentScore: number }) {
           </p>
         </div>
 
-        {/* Tasks Checklist */}
+        {/* Tasks Guide */}
         <div className="space-y-2">
           <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-            How to Increase Your Score ({completedTasksCount}/{TASKS.length})
+            How to Increase Your Score
           </div>
           
-          {TASKS.map((task) => {
-            const completed = isTaskCompleted(task.id)
-            
-            return (
-              <div
-                key={task.id}
-                className={cn(
-                  'border rounded-sm p-3 transition-all hover:border-blue-500/30',
-                  completed 
-                    ? 'bg-neon-green/5 border-neon-green/30' 
-                    : 'bg-terminal-surface border-border'
-                )}
-              >
-                <div className="flex items-start gap-3">
-                  {/* Checkbox - clickable for demo purposes */}
-                  <button
-                    onClick={() => !completed && completeTask(task.id, task.points)}
-                    className={cn(
-                      'flex-shrink-0 h-4 w-4 rounded border-2 flex items-center justify-center mt-0.5 transition-all',
-                      completed
-                        ? 'bg-neon-green border-neon-green'
-                        : 'border-muted-foreground/30 hover:border-blue-400 cursor-pointer'
-                    )}
-                  >
-                    {completed && (
-                      <Check className="h-3 w-3 text-black font-bold" />
-                    )}
-                  </button>
+          {TASKS.map((task) => (
+            <div
+              key={task.id}
+              className="border border-border rounded-sm p-3 bg-terminal-surface hover:border-blue-500/30 transition-all"
+            >
+              <div className="flex items-start gap-3">
+                {/* Icon */}
+                <div className="flex-shrink-0 h-8 w-8 rounded-full bg-blue-500/10 border border-blue-500/30 flex items-center justify-center mt-0.5">
+                  <span className="text-blue-400">
+                    {task.icon}
+                  </span>
+                </div>
 
-                  {/* Task Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2 mb-1">
-                      <div className="flex items-center gap-2">
-                        <span className={cn(
-                          "flex-shrink-0",
-                          completed ? "text-neon-green" : "text-blue-400"
-                        )}>
-                          {task.icon}
-                        </span>
-                        <h4
-                          className={cn(
-                            'text-xs font-semibold',
-                            completed ? 'text-neon-green line-through' : 'text-foreground'
-                          )}
-                        >
-                          {task.title}
-                        </h4>
-                      </div>
-                      <span
-                        className={cn(
-                          'flex-shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded border',
-                          completed
-                            ? 'text-neon-green bg-neon-green/10 border-neon-green/30'
-                            : 'text-blue-400 bg-blue-400/10 border-blue-400/30'
-                        )}
-                      >
-                        +{task.points}
-                      </span>
-                    </div>
-                    
-                    <p className="text-[10px] text-muted-foreground">
-                      {task.description}
-                    </p>
+                {/* Task Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <h4 className="text-xs font-semibold text-foreground">
+                      {task.title}
+                    </h4>
+                    <span className="flex-shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded border text-blue-400 bg-blue-400/10 border-blue-400/30">
+                      +{task.points}
+                    </span>
                   </div>
+                  
+                  <p className="text-[10px] text-muted-foreground">
+                    {task.description}
+                  </p>
                 </div>
               </div>
-            )
-          })}
+            </div>
+          ))}
         </div>
 
         {/* Potential Score Preview */}
@@ -209,7 +168,7 @@ export function RoadToAlpha({ currentScore }: { currentScore: number }) {
           <div className="flex items-center justify-between">
             <div>
               <div className="text-[10px] text-muted-foreground mb-1">
-                Potential Score After Actions
+                Potential Score with Actions
               </div>
               <div className="text-lg font-bold text-neon-green">
                 {Math.min(currentScore + totalPossiblePoints, 2800)}
