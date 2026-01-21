@@ -50,14 +50,11 @@ export function useWriteSignal() {
       trader: address || '0x0000000000000000000000000000000000000000',
     }
     
-    // Save to localStorage first
-    saveSignalToLocalStorage(signalWithTrader)
-
     // Create a hash of the signal for blockchain
     const signalString = JSON.stringify(signalWithTrader)
     const signalHash = keccak256(toHex(signalString))
 
-    // Write to contract
+    // Write to contract FIRST
     writeContract({
       address: CONTRACT_ADDRESS,
       abi: SIGNAL_CONTRACT_ABI,
@@ -65,7 +62,8 @@ export function useWriteSignal() {
       args: [signalHash],
     })
 
-    return signalHash
+    // Return signal to save after confirmation
+    return { signalWithTrader, signalHash }
   }
 
   return {
@@ -79,9 +77,9 @@ export function useWriteSignal() {
 }
 
 /**
- * Save signal to localStorage for UI display and verification
+ * Save signal to localStorage (called AFTER confirmation)
  */
-function saveSignalToLocalStorage(signal: TradeSignal) {
+export function saveSignalToLocalStorage(signal: TradeSignal) {
   const stored = localStorage.getItem('truealpha-trades')
   const trades = stored ? JSON.parse(stored) : []
   
@@ -93,4 +91,7 @@ function saveSignalToLocalStorage(signal: TradeSignal) {
   }
   
   localStorage.setItem('truealpha-trades', JSON.stringify(trades))
+  
+  // Emit event to update feed
+  window.dispatchEvent(new Event('signal-posted'))
 }
