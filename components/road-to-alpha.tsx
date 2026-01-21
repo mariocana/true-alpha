@@ -2,15 +2,13 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from './card'
 import { Button } from './button'
-import { ExternalLink, Trophy, TrendingUp, Users, MessageSquare, Shield, Award } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { ExternalLink, Trophy, TrendingUp } from 'lucide-react'
 
 interface RoadToAlphaTask {
   id: string
   title: string
   description: string
   points: number
-  icon: React.ReactNode
 }
 
 const TASKS: RoadToAlphaTask[] = [
@@ -19,35 +17,30 @@ const TASKS: RoadToAlphaTask[] = [
     title: 'Give Reviews',
     description: 'Leave positive, neutral, or negative reviews for other users',
     points: 200,
-    icon: <MessageSquare className="h-4 w-4" />,
   },
   {
     id: 'vouch',
     title: 'Get Vouched',
     description: 'Receive vouches from trusted community members (they stake ETH on you)',
     points: 500,
-    icon: <Shield className="h-4 w-4" />,
   },
   {
     id: 'mutual-vouch',
     title: 'Mutual Vouching',
     description: 'Vouch for someone who also vouches for you (bonus points)',
     points: 300,
-    icon: <Users className="h-4 w-4" />,
   },
   {
     id: 'attestation',
     title: 'Link Your Identities',
     description: 'Connect your Twitter, wallet addresses, and other accounts to your Ethos profile',
     points: 150,
-    icon: <Award className="h-4 w-4" />,
   },
   {
     id: 'active',
     title: 'Stay Active',
     description: 'Regular participation increases your score over time',
     points: 100,
-    icon: <TrendingUp className="h-4 w-4" />,
   },
 ]
 
@@ -124,41 +117,25 @@ export function RoadToAlpha({ currentScore }: { currentScore: number }) {
           </p>
         </div>
 
-        {/* Tasks Guide */}
-        <div className="space-y-2">
+        {/* Simple Task List */}
+        <div className="space-y-3">
           <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
             How to Increase Your Score
           </div>
           
           {TASKS.map((task) => (
-            <div
-              key={task.id}
-              className="border border-border rounded-sm p-3 bg-terminal-surface hover:border-blue-500/30 transition-all"
-            >
-              <div className="flex items-start gap-3">
-                {/* Icon */}
-                <div className="flex-shrink-0 h-8 w-8 rounded-full bg-blue-500/10 border border-blue-500/30 flex items-center justify-center mt-0.5">
-                  <span className="text-blue-400">
-                    {task.icon}
-                  </span>
-                </div>
-
-                {/* Task Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2 mb-1">
-                    <h4 className="text-xs font-semibold text-foreground">
-                      {task.title}
-                    </h4>
-                    <span className="flex-shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded border text-blue-400 bg-blue-400/10 border-blue-400/30">
-                      +{task.points}
-                    </span>
-                  </div>
-                  
-                  <p className="text-[10px] text-muted-foreground">
-                    {task.description}
-                  </p>
-                </div>
+            <div key={task.id} className="space-y-1">
+              <div className="flex items-start justify-between gap-2">
+                <h4 className="text-xs font-semibold text-foreground">
+                  {task.title}
+                </h4>
+                <span className="flex-shrink-0 text-[10px] font-bold text-neon-green">
+                  +{task.points}
+                </span>
               </div>
+              <p className="text-[10px] text-muted-foreground leading-relaxed">
+                {task.description}
+              </p>
             </div>
           ))}
         </div>
