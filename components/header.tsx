@@ -1,13 +1,19 @@
 'use client'
 
 import { ConnectButton } from '@rainbow-me/rainbowkit'
-import { TrendingUp, Trophy, Home } from 'lucide-react'
+import { TrendingUp, Trophy, Home, Users } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 
 export function Header() {
   const pathname = usePathname()
+
+  const navItems = [
+    { href: '/', label: 'Signals', icon: Home, color: 'neon-green' },
+    { href: '/prizepool', label: 'Prize Pool', icon: Trophy, color: 'yellow' },
+    { href: '/social', label: 'Social', icon: Users, color: 'purple' },
+  ]
 
   return (
     <header className="border-b border-border bg-terminal-surface/50 backdrop-blur">
@@ -31,31 +37,28 @@ export function Header() {
             </Link>
 
             {/* Navigation */}
-            <nav className="hidden sm:flex items-center gap-1">
-              <Link 
-                href="/"
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium transition-all",
-                  pathname === '/' 
-                    ? "bg-neon-green/10 text-neon-green border border-neon-green/30" 
-                    : "text-muted-foreground hover:text-foreground hover:bg-terminal-bg"
-                )}
-              >
-                <Home className="h-3.5 w-3.5" />
-                Feed
-              </Link>
-              <Link 
-                href="/leaderboard"
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium transition-all",
-                  pathname === '/leaderboard' 
-                    ? "bg-yellow-500/10 text-yellow-400 border border-yellow-500/30" 
-                    : "text-muted-foreground hover:text-foreground hover:bg-terminal-bg"
-                )}
-              >
-                <Trophy className="h-3.5 w-3.5" />
-                Prize Pool
-              </Link>
+            <nav className="hidden md:flex items-center gap-1">
+              {navItems.map((item) => {
+                const Icon = item.icon
+                const isActive = pathname === item.href
+                
+                return (
+                  <Link 
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium transition-all",
+                      isActive && item.color === 'neon-green' && "bg-neon-green/10 text-neon-green border border-neon-green/30",
+                      isActive && item.color === 'yellow' && "bg-yellow-500/10 text-yellow-400 border border-yellow-500/30",
+                      isActive && item.color === 'purple' && "bg-purple-500/10 text-purple-400 border border-purple-500/30",
+                      !isActive && "text-muted-foreground hover:text-foreground hover:bg-terminal-bg"
+                    )}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    {item.label}
+                  </Link>
+                )
+              })}
             </nav>
           </div>
 
@@ -71,31 +74,28 @@ export function Header() {
         </div>
 
         {/* Mobile Navigation */}
-        <nav className="sm:hidden flex items-center gap-2 mt-3 pt-3 border-t border-border">
-          <Link 
-            href="/"
-            className={cn(
-              "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded text-xs font-medium transition-all",
-              pathname === '/' 
-                ? "bg-neon-green/10 text-neon-green border border-neon-green/30" 
-                : "text-muted-foreground hover:text-foreground bg-terminal-bg"
-            )}
-          >
-            <Home className="h-3.5 w-3.5" />
-            Feed
-          </Link>
-          <Link 
-            href="/leaderboard"
-            className={cn(
-              "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded text-xs font-medium transition-all",
-              pathname === '/leaderboard' 
-                ? "bg-yellow-500/10 text-yellow-400 border border-yellow-500/30" 
-                : "text-muted-foreground hover:text-foreground bg-terminal-bg"
-            )}
-          >
-            <Trophy className="h-3.5 w-3.5" />
-            Prize Pool
-          </Link>
+        <nav className="md:hidden flex items-center gap-2 mt-3 pt-3 border-t border-border">
+          {navItems.map((item) => {
+            const Icon = item.icon
+            const isActive = pathname === item.href
+            
+            return (
+              <Link 
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded text-xs font-medium transition-all",
+                  isActive && item.color === 'neon-green' && "bg-neon-green/10 text-neon-green border border-neon-green/30",
+                  isActive && item.color === 'yellow' && "bg-yellow-500/10 text-yellow-400 border border-yellow-500/30",
+                  isActive && item.color === 'purple' && "bg-purple-500/10 text-purple-400 border border-purple-500/30",
+                  !isActive && "text-muted-foreground hover:text-foreground bg-terminal-bg"
+                )}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {item.label}
+              </Link>
+            )
+          })}
         </nav>
       </div>
     </header>

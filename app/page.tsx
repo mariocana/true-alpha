@@ -3,7 +3,6 @@
 import { Header } from '@/components/header'
 import { Dashboard } from '@/components/dashboard'
 import { SignalsFeed } from '@/components/signals-feed'
-import { FollowingTraders } from '@/components/following-traders'
 
 export default function Home() {
   return (
@@ -11,7 +10,7 @@ export default function Home() {
       <Header />
       
       <main className="container mx-auto px-4 py-6">
-        <div className="grid lg:grid-cols-[350px_1fr_300px] gap-4">
+        <div className="grid lg:grid-cols-[350px_1fr] gap-4">
           {/* Left Sidebar - Dashboard */}
           <aside className="space-y-4">
             <Dashboard />
@@ -21,18 +20,6 @@ export default function Home() {
           <section>
             <SignalsFeed />
           </section>
-
-          {/* Right Sidebar - Following Traders */}
-          <aside className="hidden lg:block">
-            <div className="sticky top-4">
-              <FollowingTraders />
-            </div>
-          </aside>
-        </div>
-
-        {/* Mobile Following */}
-        <div className="lg:hidden mt-6">
-          <FollowingTraders />
         </div>
       </main>
 

@@ -1,11 +1,11 @@
 'use client'
 
 import { Header } from '@/components/header'
-import { PrizePool } from '@/components/prize-pool'
 import { Leaderboard } from '@/components/leaderboard'
-import { SeasonHistory } from '@/components/season-history'
+import { FollowingTraders } from '@/components/following-traders'
+import { TraderSearch } from '@/components/trader-search'
 
-export default function LeaderboardPage() {
+export default function SocialPage() {
   return (
     <div className="min-h-screen bg-terminal-bg">
       <Header />
@@ -13,25 +13,27 @@ export default function LeaderboardPage() {
       <main className="container mx-auto px-4 py-6">
         {/* Page Title */}
         <div className="mb-6">
-          <h1 className="text-xl font-bold text-foreground">Prize Pool & Rankings</h1>
+          <h1 className="text-xl font-bold text-foreground">Social Activity</h1>
           <p className="text-sm text-muted-foreground">
-            Compete for weekly rewards • Top traders split the prize pool
+            Follow top traders • Get notified on new signals • Build your network
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-[1fr_400px] gap-6">
-          {/* Main Content - Prize Pool + Season History */}
-          <div className="space-y-6">
-            <PrizePool />
-            <SeasonHistory />
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Left - Search Traders */}
+          <div>
+            <TraderSearch />
           </div>
 
-          {/* Sidebar - Full Leaderboard */}
-          <aside>
-            <div className="sticky top-4">
-              <Leaderboard />
-            </div>
-          </aside>
+          {/* Center - Leaderboard */}
+          <div>
+            <Leaderboard />
+          </div>
+
+          {/* Right - Following */}
+          <div>
+            <FollowingTraders />
+          </div>
         </div>
       </main>
 
