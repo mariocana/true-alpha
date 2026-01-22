@@ -1,38 +1,37 @@
 'use client'
 
 import { Header } from '@/components/header'
-import { Dashboard } from '@/components/dashboard'
-import { SignalsFeed } from '@/components/signals-feed'
-import { FollowingTraders } from '@/components/following-traders'
+import { PrizePool } from '@/components/prize-pool'
+import { Leaderboard } from '@/components/leaderboard'
+import { SeasonHistory } from '@/components/season-history'
 
-export default function Home() {
+export default function LeaderboardPage() {
   return (
     <div className="min-h-screen bg-terminal-bg">
       <Header />
       
       <main className="container mx-auto px-4 py-6">
-        <div className="grid lg:grid-cols-[350px_1fr_300px] gap-4">
-          {/* Left Sidebar - Dashboard */}
-          <aside className="space-y-4">
-            <Dashboard />
-          </aside>
-
-          {/* Main Content - Signals Feed */}
-          <section>
-            <SignalsFeed />
-          </section>
-
-          {/* Right Sidebar - Following Traders */}
-          <aside className="hidden lg:block">
-            <div className="sticky top-4">
-              <FollowingTraders />
-            </div>
-          </aside>
+        {/* Page Title */}
+        <div className="mb-6">
+          <h1 className="text-xl font-bold text-foreground">Prize Pool & Rankings</h1>
+          <p className="text-sm text-muted-foreground">
+            Compete for weekly rewards • Top traders split the prize pool
+          </p>
         </div>
 
-        {/* Mobile Following */}
-        <div className="lg:hidden mt-6">
-          <FollowingTraders />
+        <div className="grid lg:grid-cols-[1fr_400px] gap-6">
+          {/* Main Content - Prize Pool + Season History */}
+          <div className="space-y-6">
+            <PrizePool />
+            <SeasonHistory />
+          </div>
+
+          {/* Sidebar - Full Leaderboard */}
+          <aside>
+            <div className="sticky top-4">
+              <Leaderboard />
+            </div>
+          </aside>
         </div>
       </main>
 
