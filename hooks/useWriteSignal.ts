@@ -14,8 +14,7 @@ const SIGNAL_CONTRACT_ABI = [
   },
 ] as const
 
-
-const CONTRACT_ADDRESS = '0xeDABa603407D8D11b3C0C499deC61e1ad9B879Dd'
+const CONTRACT_ADDRESS = '0xeDABa603407D8D11b3C0C499deC61e1ad9B879Dd' 
 
 export interface TradeSignal {
   id: string
@@ -31,7 +30,7 @@ export interface TradeSignal {
 }
 
 export function useWriteSignal() {
-  const { data: hash, writeContract, isPending, error } = useWriteContract()
+  const { data: hash, writeContract, isPending, error, reset } = useWriteContract()
   const { address } = useAccount()
   
   const { isLoading: isConfirming, isSuccess: isConfirmed } =
@@ -69,6 +68,7 @@ export function useWriteSignal() {
     isConfirming,
     isConfirmed,
     error,
+    reset,
   }
 }
 

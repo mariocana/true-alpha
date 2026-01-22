@@ -11,8 +11,42 @@ interface RoadToAlphaTask {
   points: number
 }
 
+const TASKS: RoadToAlphaTask[] = [
+  {
+    id: 'reviews',
+    title: 'Give Reviews',
+    description: 'Leave positive, neutral, or negative reviews for other users',
+    points: 200,
+  },
+  {
+    id: 'vouch',
+    title: 'Get Vouched',
+    description: 'Receive vouches from trusted community members (they stake ETH on you)',
+    points: 500,
+  },
+  {
+    id: 'mutual-vouch',
+    title: 'Mutual Vouching',
+    description: 'Vouch for someone who also vouches for you (bonus points)',
+    points: 300,
+  },
+  {
+    id: 'attestation',
+    title: 'Link Your Identities',
+    description: 'Connect your Twitter, wallet addresses, and other accounts to your Ethos profile',
+    points: 150,
+  },
+  {
+    id: 'active',
+    title: 'Stay Active',
+    description: 'Regular participation increases your score over time',
+    points: 100,
+  },
+]
+
 export function RoadToAlpha({ currentScore }: { currentScore: number }) {
   const pointsNeeded = Math.max(0, 1200 - currentScore)
+  const totalPossiblePoints = TASKS.reduce((sum, task) => sum + task.points, 0)
   const progressPercentage = Math.min(
     ((currentScore / 1200) * 100),
     100
@@ -87,6 +121,44 @@ export function RoadToAlpha({ currentScore }: { currentScore: number }) {
         <div className="space-y-3">
           <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
             How to Increase Your Score
+          </div>
+          
+          {TASKS.map((task) => (
+            <div key={task.id} className="space-y-1">
+              <div className="flex items-start justify-between gap-2">
+                <h4 className="text-xs font-semibold text-foreground">
+                  {task.title}
+                </h4>
+                <span className="flex-shrink-0 text-[10px] font-bold text-neon-green">
+                  +{task.points}
+                </span>
+              </div>
+              <p className="text-[10px] text-muted-foreground leading-relaxed">
+                {task.description}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* Potential Score Preview */}
+        <div className="bg-terminal-bg border border-neon-green/30 rounded-sm p-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-[10px] text-muted-foreground mb-1">
+                Potential Score with Actions
+              </div>
+              <div className="text-lg font-bold text-neon-green">
+                {Math.min(currentScore + totalPossiblePoints, 2800)}
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-[10px] text-neon-green font-bold">
+                ✓ ALPHA UNLOCKED
+              </div>
+              <div className="text-[9px] text-muted-foreground">
+                Post unlimited signals
+              </div>
+            </div>
           </div>
         </div>
 
