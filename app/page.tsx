@@ -11,7 +11,7 @@ export default function Home() {
       <Header />
       
       <main className="container mx-auto px-4 py-6">
-        <div className="grid lg:grid-cols-[350px_1fr_280px] gap-6">
+        <div className="grid lg:grid-cols-[350px_1fr_300px] gap-4">
           {/* Left Sidebar - Dashboard */}
           <aside className="space-y-4">
             <Dashboard />
