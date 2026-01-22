@@ -4,6 +4,7 @@ import { Header } from '@/components/header'
 import { Dashboard } from '@/components/dashboard'
 import { SignalsFeed } from '@/components/signals-feed'
 import { Leaderboard } from '@/components/leaderboard'
+import { PrizePool } from '@/components/prize-pool'
 
 export default function Home() {
   return (
@@ -22,16 +23,18 @@ export default function Home() {
             <SignalsFeed />
           </section>
 
-          {/* Right Sidebar - Leaderboard */}
+          {/* Right Sidebar - Prize Pool & Leaderboard */}
           <aside className="hidden lg:block">
-            <div className="sticky top-4">
+            <div className="sticky top-4 space-y-4">
+              <PrizePool />
               <Leaderboard />
             </div>
           </aside>
         </div>
 
-        {/* Mobile Leaderboard */}
-        <div className="lg:hidden mt-6">
+        {/* Mobile Prize Pool & Leaderboard */}
+        <div className="lg:hidden mt-6 space-y-4">
+          <PrizePool />
           <Leaderboard />
         </div>
       </main>
