@@ -3,6 +3,7 @@
 import { Header } from '@/components/header'
 import { Dashboard } from '@/components/dashboard'
 import { SignalsFeed } from '@/components/signals-feed'
+import { Leaderboard } from '@/components/leaderboard'
 
 export default function Home() {
   return (
@@ -10,7 +11,7 @@ export default function Home() {
       <Header />
       
       <main className="container mx-auto px-4 py-6">
-        <div className="grid lg:grid-cols-[400px_1fr] gap-6">
+        <div className="grid lg:grid-cols-[350px_1fr_280px] gap-6">
           {/* Left Sidebar - Dashboard */}
           <aside className="space-y-4">
             <Dashboard />
@@ -20,6 +21,18 @@ export default function Home() {
           <section>
             <SignalsFeed />
           </section>
+
+          {/* Right Sidebar - Leaderboard */}
+          <aside className="hidden lg:block">
+            <div className="sticky top-4">
+              <Leaderboard />
+            </div>
+          </aside>
+        </div>
+
+        {/* Mobile Leaderboard */}
+        <div className="lg:hidden mt-6">
+          <Leaderboard />
         </div>
       </main>
 
