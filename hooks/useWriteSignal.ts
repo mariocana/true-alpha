@@ -14,12 +14,8 @@ const SIGNAL_CONTRACT_ABI = [
   },
 ] as const
 
-// ⚠️ IMPORTANT: Deploy the contract and update this address!
-// 1. Go to https://remix.ethereum.org
-// 2. Upload contracts/TrueAlphaSignals.sol
-// 3. Compile and deploy to Base Sepolia
-// 4. Copy the deployed address and paste it here
-const CONTRACT_ADDRESS = '0x0000000000000000000000000000000000000000' // ← REPLACE THIS
+
+const CONTRACT_ADDRESS = '0xeDABa603407D8D11b3C0C499deC61e1ad9B879Dd'
 
 export interface TradeSignal {
   id: string
